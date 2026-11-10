@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 3 Flashcards – Disease & Homeostasis</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --border: #334155;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+header { width: 100%; max-width: 640px; text-align: center; margin-bottom: 1.25rem; }
+h1 { font-size: 1.5rem; font-weight: 700; }
+.subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+.progress-wrap { width: 100%; max-width: 640px; margin-bottom: 1rem; }
+.progress-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.35rem; }
+.progress-bar { height: 10px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); width: 0%; transition: width 0.3s ease; }
+.stats { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--muted); margin-top: 0.4rem; }
+.card-container { width: 100%; max-width: 640px; margin-bottom: 1.25rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  min-height: 280px;
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.card-section { position: absolute; top: 0.75rem; left: 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+.card-counter { position: absolute; top: 0.75rem; right: 1rem; font-size: 0.8rem; color: var(--muted); }
+.question { font-size: 1.25rem; font-weight: 600; line-height: 1.4; margin-top: 1.5rem; margin-bottom: 1rem; }
+.hint-btn { align-self: flex-start; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.75rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; margin-bottom: 0.75rem; }
+.hint-btn:hover { border-color: var(--accent); color: var(--accent); }
+.hint { background: rgba(56,189,248,0.1); border-left: 3px solid var(--accent); padding: 0.6rem 0.8rem; border-radius: 0 8px 8px 0; font-size: 0.95rem; color: #e0f2fe; margin-bottom: 1rem; display: none; }
+.answer { font-size: 1.15rem; line-height: 1.5; color: #e2e8f0; display: none; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+.controls { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 0.75rem; }
+.btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+button { flex: 1; min-width: 100px; padding: 0.75rem 1rem; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.btn-primary { background: var(--accent); color: #0f172a; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-secondary { background: var(--border); color: var(--text); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.completion { text-align: center; padding: 2rem 1rem; display: none; }
+.completion h2 { color: var(--success); margin-bottom: 0.5rem; }
+@media (max-width: 480px) { .question { font-size: 1.1rem; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Unit 3 Flashcards</h1>
+  <p class="subtitle">How Disease Affects Homeostasis – Cancer, Cell Cycle, Membrane, Diabetes</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-label"><span>Mastered</span><span id="progress-text">0 / 0</span></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="stats"><span id="correct-count">Correct this session: 0</span></div>
+</div>
+
+<div class="card-container">
+  <div class="card" id="card">
+    <div class="card-section" id="section"></div>
+    <div class="card-counter" id="counter"></div>
+    <div class="question" id="question"></div>
+    <button class="hint-btn" id="hint-btn">Show Hint</button>
+    <div class="hint" id="hint"></div>
+    <div class="answer" id="answer"></div>
+  </div>
+</div>
+
+<div class="controls" id="controls">
+  <div class="btn-row" id="action-row"><button class="btn-primary" id="show-answer">Show Answer</button></div>
+  <div class="btn-row" id="grade-row" style="display:none;">
+    <button class="btn-danger" id="incorrect">Still Learning</button>
+    <button class="btn-success" id="correct">Got It!</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn-secondary" id="prev">Previous</button>
+    <button class="btn-secondary" id="next">Next</button>
+    <button class="btn-outline" id="shuffle">Shuffle</button>
+  </div>
+  <div class="btn-row"><button class="btn-outline" id="reset">Reset Progress</button></div>
+</div>
+
+<div class="completion" id="completion">
+  <h2>All cards mastered!</h2>
+  <p>Great work. Review anytime or reset to start over.</p>
+  <button class="btn-primary" id="review" style="margin-top:1rem;">Review All</button>
+</div>
+
+<script>
+const cards = [
+  { section: "Chromosomes", q: "What is chromatin?", a: "Uncoiled DNA (and associated proteins) found during interphase.", hint: "Loose, uncoiled form." },
+  { section: "Chromosomes", q: "What is a chromatid?", a: "One of the two identical copies of a duplicated chromosome, attached at the centromere.", hint: "Duplicated and coiled half of a chromosome." },
+  { section: "Chromosomes", q: "What is a chromosome?", a: "A DNA molecule with attached proteins. After replication it consists of two sister chromatids.", hint: "Condensed form ready for division." },
+  { section: "Chromosomes", q: "What does diploid mean in humans?", a: "Body cells have 46 chromosomes (23 pairs).", hint: "2n = 46." },
+  { section: "Chromosomes", q: "What does haploid mean in humans?", a: "Gametes (sperm and egg) have 23 chromosomes.", hint: "1n = 23." },
+  { section: "Chromosomes", q: "What is the purpose of centrioles and spindle fibers?", a: "They help organize and pull chromosomes apart during cell division so each new cell gets the correct chromosomes.", hint: "Grab and separate chromosomes." },
+
+  { section: "Cell Cycle", q: "What happens in G1 of interphase?", a: "Interval after cell division. Cell grows and carries out normal functions.", hint: "Gap 1 – growth after division." },
+  { section: "Cell Cycle", q: "What happens in S phase of interphase?", a: "DNA synthesis / replication. Chromosomes are duplicated.", hint: "Synthesis phase." },
+  { section: "Cell Cycle", q: "What happens in G2 of interphase?", a: "Interval after DNA replication. Cell prepares for mitosis.", hint: "Gap 2 – final prep." },
+  { section: "Cell Cycle", q: "What happens in prophase?", a: "Nuclear membrane dissolves. Centrosomes move toward poles. DNA shortens and thickens into chromosomes. Spindle fibers form and attach to centromeres of duplicated chromosomes.", hint: "Chromosomes condense and spindle forms." },
+  { section: "Cell Cycle", q: "What happens in metaphase?", a: "Spindle fibers move chromosomes to the equator. Chromosomes line up along the equatorial plane.", hint: "Middle – line up in the middle." },
+  { section: "Cell Cycle", q: "What happens in anaphase?", a: "Spindle fibers shorten, pulling sister chromatids apart by their centromeres. Chromosomes move to opposite poles of the cell.", hint: "Apart – pulled to poles." },
+  { section: "Cell Cycle", q: "What happens in telophase?", a: "Chromosomes unwind. Spindle fibers disappear. Nuclear membrane re-forms. Two nuclei result. Cell membrane starts to pinch inward (beginning of cytokinesis).", hint: "Two nuclei form." },
+  { section: "Cell Cycle", q: "What happens in cytokinesis?", a: "Cleavage furrow deepens and divides the cell into two identical daughter cells.", hint: "Final split into two cells." },
+
+  { section: "Cancer", q: "What protein helps control cell division (mentioned in the notes)?", a: "p53 (a tumor suppressor).", hint: "The 'guardian of the genome'." },
+  { section: "Cancer", q: "Why do elephants rarely get cancer?", a: "They have about 20 copies of the TP53 gene. Extra copies make their cells more likely to die if DNA is damaged, preventing cancer.", hint: "Multiple copies of a tumor-suppressor gene." },
+  { section: "Cancer", q: "How can a change in one cell cause so much damage?", a: "The mutated cell multiplies very quickly and the cancer cells spread.", hint: "Uncontrolled division and spread." },
+  { section: "Cancer", q: "How can cancer disrupt homeostasis?", a: "It disrupts organs and organ systems, which interferes with the body’s ability to maintain balance.", hint: "Affects organs and systems." },
+
+  { section: "Membrane & Transport", q: "What does the cell membrane do?", a: "Controls what enters and leaves the cell. It is semi-permeable.", hint: "Selective barrier." },
+  { section: "Membrane & Transport", q: "What part of the phospholipid bilayer does not like water?", a: "The tails (hydrophobic).", hint: "Hydrophobic tails." },
+  { section: "Membrane & Transport", q: "What is diffusion?", a: "Movement of particles from a high concentration to a low concentration.", hint: "Down the concentration gradient." },
+  { section: "Membrane & Transport", q: "What is osmosis?", a: "Movement of water from an area of high water concentration to low water concentration across a semi-permeable membrane.", hint: "Water moving across a membrane." },
+  { section: "Membrane & Transport", q: "What is facilitated diffusion?", a: "Transport proteins help molecules that are not soluble in lipids or are too large to pass through the membrane on their own.", hint: "Uses protein helpers." },
+  { section: "Membrane & Transport", q: "What is an isotonic solution?", a: "The concentration of solutes outside the cell is the same as inside. No net water movement.", hint: "Equal concentrations." },
+  { section: "Membrane & Transport", q: "What is a hypertonic solution?", a: "Higher solute concentration outside the cell. Water leaves the cell and it shrinks.", hint: "Water exits." },
+  { section: "Membrane & Transport", q: "What is a hypotonic solution?", a: "Lower solute concentration outside the cell. Water enters the cell and it swells.", hint: "Water enters." },
+  { section: "Membrane & Transport", q: "What is cytolysis?", a: "When an animal cell is placed in a hypotonic solution, it gains water and swells. If it swells enough to burst, that is cytolysis.", hint: "Cell bursting from too much water." },
+
+  { section: "Diabetes", q: "What is diabetes?", a: "A chronic disease in which blood sugar levels are too high.", hint: "High blood glucose." },
+  { section: "Diabetes", q: "Why is blood sugar high in diabetes?", a: "The body either does not produce enough insulin or cells do not respond properly to insulin, so glucose cannot enter cells efficiently.", hint: "Insulin problem." },
+  { section: "Diabetes", q: "Why do thirst and frequent urination occur with diabetes?", a: "High glucose in the blood draws water into the urine, so the body loses a lot of water and the person becomes thirsty.", hint: "Excess glucose pulls water out." },
+  { section: "Diabetes", q: "How can diabetes disrupt homeostasis?", a: "It raises blood sugar, damages blood vessels and nerves, and interferes with normal organ function.", hint: "Affects blood vessels, nerves, and organs." },
+
+  { section: "Homeostasis", q: "What is homeostasis?", a: "A balance maintained between a cell (or organism) and its environment.", hint: "Stable internal conditions." },
+  { section: "Homeostasis", q: "What is a positive feedback loop?", a: "The product increases the process that creates it (amplifies the change).", hint: "Amplifies the response." },
+  { section: "Homeostasis", q: "What is a negative feedback loop?", a: "The product decreases the process that creates it (returns the system toward a set point).", hint: "Opposes the change." },
+
+  { section: "Body Systems", q: "What is the main role of the digestive system in homeostasis?", a: "Breaks down food into absorbable units.", hint: "Process food." },
+  { section: "Body Systems", q: "What is the main role of the urinary system in homeostasis?", a: "Eliminates waste and regulates water balance.", hint: "Waste and water." },
+  { section: "Body Systems", q: "What is the main role of the respiratory system in homeostasis?", a: "Keeps blood supplied with oxygen and removes carbon dioxide.", hint: "Gas exchange." },
+  { section: "Body Systems", q: "What is the main role of the cardiovascular system in homeostasis?", a: "Transports blood, nutrients, and waste.", hint: "Circulation." },
+  { section: "Body Systems", q: "What is the main role of the endocrine system in homeostasis?", a: "Glands secrete hormones that regulate substances in the body (such as insulin and glucagon).", hint: "Hormone regulation." },
+  { section: "Body Systems", q: "What is the main role of the nervous system in homeostasis?", a: "Fast-acting control system that coordinates body functions.", hint: "Quick signaling." }
+];
+
+let currentIndex = 0;
+let order = cards.map((_, i) => i);
+let mastered = new Set();
+let sessionCorrect = 0;
+
+const el = {
+  section: document.getElementById('section'),
+  counter: document.getElementById('counter'),
+  question: document.getElementById('question'),
+  hint: document.getElementById('hint'),
+  answer: document.getElementById('answer'),
+  hintBtn: document.getElementById('hint-btn'),
+  showAnswer: document.getElementById('show-answer'),
+  actionRow: document.getElementById('action-row'),
+  gradeRow: document.getElementById('grade-row'),
+  correctBtn: document.getElementById('correct'),
+  incorrectBtn: document.getElementById('incorrect'),
+  prev: document.getElementById('prev'),
+  next: document.getElementById('next'),
+  shuffle: document.getElementById('shuffle'),
+  reset: document.getElementById('reset'),
+  progressFill: document.getElementById('progress-fill'),
+  progressText: document.getElementById('progress-text'),
+  correctCount: document.getElementById('correct-count'),
+  completion: document.getElementById('completion'),
+  controls: document.getElementById('controls'),
+  review: document.getElementById('review')
+};
+
+function updateProgress() {
+  const total = cards.length;
+  const done = mastered.size;
+  const pct = total ? (done / total) * 100 : 0;
+  el.progressFill.style.width = pct + '%';
+  el.progressText.textContent = `${done} / ${total}`;
+  el.correctCount.textContent = `Correct this session: ${sessionCorrect}`;
+  if (done === total && total > 0) {
+    el.controls.style.display = 'none';
+    el.completion.style.display = 'block';
+  } else {
+    el.controls.style.display = 'flex';
+    el.completion.style.display = 'none';
+  }
+}
+
+function showCard() {
+  const idx = order[currentIndex];
+  const card = cards[idx];
+  el.section.textContent = card.section;
+  el.counter.textContent = `${currentIndex + 1} / ${cards.length}`;
+  el.question.textContent = card.q;
+  el.hint.textContent = card.hint;
+  el.answer.textContent = card.a;
+  el.hint.style.display = 'none';
+  el.answer.style.display = 'none';
+  el.actionRow.style.display = 'flex';
+  el.gradeRow.style.display = 'none';
+  el.hintBtn.textContent = 'Show Hint';
+  updateProgress();
+}
+
+el.hintBtn.addEventListener('click', () => {
+  el.hint.style.display = el.hint.style.display === 'none' ? 'block' : 'none';
+  el.hintBtn.textContent = el.hint.style.display === 'block' ? 'Hide Hint' : 'Show Hint';
+});
+
+el.showAnswer.addEventListener('click', () => {
+  el.answer.style.display = 'block';
+  el.actionRow.style.display = 'none';
+  el.gradeRow.style.display = 'flex';
+});
+
+el.correctBtn.addEventListener('click', () => {
+  const idx = order[currentIndex];
+  if (!mastered.has(idx)) {
+    mastered.add(idx);
+    sessionCorrect++;
+  }
+  nextCard();
+});
+
+el.incorrectBtn.addEventListener('click', nextCard);
+
+function nextCard() {
+  currentIndex = (currentIndex + 1) % order.length;
+  showCard();
+}
+
+el.next.addEventListener('click', nextCard);
+el.prev.addEventListener('click', () => {
+  currentIndex = (currentIndex - 1 + order.length) % order.length;
+  showCard();
+});
+
+el.shuffle.addEventListener('click', () => {
+  order.sort(() => Math.random() - 0.5);
+  currentIndex = 0;
+  showCard();
+});
+
+el.reset.addEventListener('click', () => {
+  if (confirm('Reset all progress?')) {
+    mastered.clear();
+    sessionCorrect = 0;
+    currentIndex = 0;
+    showCard();
+  }
+});
+
+el.review.addEventListener('click', () => {
+  el.completion.style.display = 'none';
+  el.controls.style.display = 'flex';
+  currentIndex = 0;
+  showCard();
+});
+
+showCard();
+</script>
+</body>
+</html>
